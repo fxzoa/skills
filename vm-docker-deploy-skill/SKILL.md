@@ -1,6 +1,6 @@
 ---
 name: vm-docker-deploy
-description: Deploy Docker Compose workloads to cloud VMs (GCE/Linux) with automated Docker provisioning, SSH key sync, directory structuring, and health verification.
+description: Deploys, inspects, verifies, and tears down Docker Compose workloads on cloud VMs (GCE/Linux) with automated Docker provisioning, SSH key/env syncing, health checks, and Cloudflare DNS registration. Use when deploying or managing Docker Compose stacks on remote VMs. Do NOT use for local-only Crawl4AI setup or Kaggle notebook deployments.
 ---
 
 # vm-docker-deploy
@@ -10,15 +10,27 @@ Deploy, configure, verify, and manage containerized workloads defined in Docker 
 ## Pre-Built Operations (`scripts/`)
 
 > [!NOTE]
-> Detailed CLI flags, schemas, exit codes, and agent execution protocols are documented in [references/TOOLS.md](file:///home/ppbb/.gemini/antigravity-cli/skills/vm-docker-deploy/references/TOOLS.md).
+> Detailed CLI flags, schemas, exit codes, and agent execution protocols are documented in [references/TOOLS.md](references/TOOLS.md).
 
 | Operation | Invocation | Purpose | Reference |
 |:---|:---|:---|:---|
-| `inspect_compose` | `python3 scripts/inspect_compose.py --compose <file> [--json]` | Statically analyzes YAML for volume mounts, SSH keys, ports, and env dependencies. | [TOOLS.md#21](file:///home/ppbb/.gemini/antigravity-cli/skills/vm-docker-deploy/references/TOOLS.md#21-inspect_composepy) |
-| `deploy_compose` | `python3 scripts/deploy_compose.py --compose <file> --vm <vm> [--project <p>] [--zone <z>]` | Provisions Docker (if missing), syncs keys/env, deploys Compose stack, and checks health. | [TOOLS.md#22](file:///home/ppbb/.gemini/antigravity-cli/skills/vm-docker-deploy/references/TOOLS.md#22-deploy_composepy) |
-| `register_dns` | `python3 scripts/register_dns.py --vm <vm> --subdomain <sub> [--zone <z>]` | Discovers VM external IP and registers Cloudflare DNS A record via `dns-worker` API. | [TOOLS.md#23](file:///home/ppbb/.gemini/antigravity-cli/skills/vm-docker-deploy/references/TOOLS.md#23-register_dnspy) |
-| `verify_vm` | `python3 scripts/verify_vm.py --vm <vm> [--remote-dir <dir>]` | Checks Docker daemon and container status on the target VM. | [TOOLS.md#24](file:///home/ppbb/.gemini/antigravity-cli/skills/vm-docker-deploy/references/TOOLS.md#24-verify_vmpy) |
-| `teardown_vm` | `python3 scripts/teardown_vm.py --vm <vm> --remote-dir <dir> [--volumes]` | Stops containers, cleans up volumes, and removes remote service directories. | [TOOLS.md#25](file:///home/ppbb/.gemini/antigravity-cli/skills/vm-docker-deploy/references/TOOLS.md#25-teardown_vmpy) |
+| `inspect_compose` | `python3 scripts/inspect_compose.py --compose <file> [--json]` | Statically analyzes YAML for volume mounts, SSH keys, ports, and env dependencies. | [TOOLS.md#21](references/TOOLS.md#21-inspect_composepy) |
+| `deploy_compose` | `python3 scripts/deploy_compose.py --compose <file> --vm <vm> [--project <p>] [--zone <z>]` | Provisions Docker (if missing), syncs keys/env, deploys Compose stack, and checks health. | [TOOLS.md#22](references/TOOLS.md#22-deploy_composepy) |
+| `register_dns` | `python3 scripts/register_dns.py --vm <vm> --subdomain <sub> [--zone <z>]` | Discovers VM external IP and registers Cloudflare DNS A record via `dns-worker` API. | [TOOLS.md#23](references/TOOLS.md#23-register_dnspy) |
+| `verify_vm` | `python3 scripts/verify_vm.py --vm <vm> [--remote-dir <dir>]` | Checks Docker daemon and container status on the target VM. | [TOOLS.md#24](references/TOOLS.md#24-verify_vmpy) |
+| `teardown_vm` | `python3 scripts/teardown_vm.py --vm <vm> --remote-dir <dir> [--volumes]` | Stops containers, cleans up volumes, and removes remote service directories. | [TOOLS.md#25](references/TOOLS.md#25-teardown_vmpy) |
+
+## Document Index
+| Document | Purpose |
+|:---|:---|
+| [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) | Reusable core design vs. project-specific replacements |
+| [references/TOOLS.md](references/TOOLS.md) | CLI flags, schemas, and exit codes for `scripts/` |
+| [references/ARCHITECTURE.md](references/ARCHITECTURE.md) | VM provisioning, SSH sync, and DNS architecture |
+| [references/CHECKLIST.md](references/CHECKLIST.md) | Deployment & post-deploy verification checklist |
+| [references/GUIDE.md](references/GUIDE.md) | Step-by-step VM Docker Compose deployment guide |
+| [references/PREREQUISITES.md](references/PREREQUISITES.md) | `gcloud`, SSH keys, and Cloudflare worker prerequisites |
+| [references/TRIGGERS.md](references/TRIGGERS.md) | Positive/negative trigger examples and smoke tests |
+| [references/TROUBLESHOOTING.md](references/TROUBLESHOOTING.md) | Fixes for volume mount dir issues, SSH perms, and health failures |
 
 ## Workflow Calls
 1. `inspect_compose(--compose)` → pre-flight check of volume mounts and dependencies.

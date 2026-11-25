@@ -1,6 +1,6 @@
 ---
 name: diagram-design
-description: Create branded technical, process, architecture, flow, ER, sequence, timeline, and data diagrams as standalone HTML/SVG/PNG.
+description: Creates branded technical, process, flow, ER, sequence, timeline, and data diagrams as standalone light-mode HTML/SVG files without external CDNs or Mermaid (Rule.11). Use when illustrating workflows, schemas, decision matrices, or converting .drawio/.excalidraw inputs. Do not use for dual logical/physical infra topologies (use architecture-diagram), 9-block blog posts (use tech-blog-html), or .pptx decks (use pptx-generator).
 license: MIT
 metadata:
   version: "2.6"
@@ -38,3 +38,8 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.
 - Never embed Mermaid.js or external CDN scripts in final HTML output (Rule.11).
 - Never overcrowd a single SVG; split complex views into focused diagrams.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable HTML/SVG core design vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke test steps.
+- [references/TOOLS.md](references/TOOLS.md) — Deterministic script interfaces (`scaffold_html.py`, `validate_html.py`).

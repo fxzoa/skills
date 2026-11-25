@@ -1,0 +1,88 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: coin-trade-all-in-one
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+spec:
+  template:
+    metadata:
+      annotations:
+        # 常駐型ボットを安全に動かすため、CPU常時割り当て（always allocated）を有効化
+        run.googleapis.com/cpu-throttling: "false"
+        # 最小インスタンス数を1に設定（スケールダウンによるボット停止を防止）
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "1"
+        # 実行環境: 第2世代（ボリュームマウントやネットワーク互換性対応）
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 3600
+      containers:
+      - name: coin-trade-app
+        image: LOCATION-docker.pkg.dev/PROJECT_ID/coin-trade-repo/coin-trade-all-in-one:latest
+        resources:
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: DB_PATH
+          value: "/app/data/tracker.db"
+        - name: REDIS_URL
+          value: "redis://127.0.0.1:6379"
+        # 各サブコンポーネントの有効化フラグ（必要に応じて false に設定可能）
+        - name: ENABLE_REDIS_TUNNEL
+          value: "false"
+        - name: ENABLE_TOP20
+          value: "true"
+        - name: ENABLE_TOP20_WORKER
+          value: "true"
+        - name: ENABLE_PRICE_MONITOR
+          value: "true"
+        - name: ENABLE_PRICE_MONITOR_WORKER
+          value: "true"
+        - name: ENABLE_BTC_DCA
+          value: "true"
+        - name: ENABLE_BTC_DCA_BOT
+          value: "true"
+        - name: ENABLE_BTC_GRID
+          value: "true"
+        - name: ENABLE_BTC_GRID_BOT
+          value: "true"
+        - name: ENABLE_SURGE_DIP
+          value: "true"
+        - name: ENABLE_SURGE_DIP_BOT
+          value: "true"
+        - name: ENABLE_MULTI_DCA
+          value: "true"
+        - name: ENABLE_MULTI_DCA_BOT
+          value: "true"
+        - name: ENABLE_SLACK_ALERT
+          value: "true"
+        - name: ENABLE_SLACK_ALERT_SENDER
+          value: "true"
+        - name: ENABLE_COIN_TRADE
+          value: "true"
+        # APIヘルスチェックプローブ
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 12
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3

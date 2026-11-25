@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+set -e
+
+echo "=== [Cloud Run Entrypoint] Initializing... ==="
+
+mkdir -p /app/data /app/.cache/deno
+
+# オプション: SSHトンネル / バックグラウンドプロセスの起動
+# サービス固有のバックグラウンドプロセスをここに記述
+
+# メインHTTPサーバーのフォアグラウンド実行（PORTリッスン必須）
+export PORT="${PORT:-8080}"
+export HOST="0.0.0.0"
+
+echo "=== Starting Main HTTP Service on port $PORT ==="
+exec {{ENTRYPOINT_CMD}}

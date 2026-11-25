@@ -1,6 +1,6 @@
 ---
 name: architecture-diagram
-description: Create professional, light-themed architecture diagrams as standalone HTML files with inline SVG graphics.
+description: Creates professional, light-themed system and infrastructure architecture diagrams as standalone HTML files with inline SVG graphics (Rule.11 / Rule.14). Use when visualizing cloud, network, security, or dual logical/physical system topologies. Do not use for general flowcharts/ER schemas (use diagram-design), full project README.html specs (use html-readme-architect), or formal HLD/incident reports (use prop-hld-ir-html).
 license: MIT
 metadata:
   version: "1.1"
@@ -39,3 +39,8 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.
 - Never embed Mermaid.js or external CDN links in HTML deliverables (Rule.11).
 - Never omit the physical/network diagram when producing system architecture docs (Rule.14).
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable HTML/SVG core design vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke test steps.
+- [references/TOOLS.md](references/TOOLS.md) — Deterministic script interfaces (`scaffold_html.py`, `validate_html.py`).

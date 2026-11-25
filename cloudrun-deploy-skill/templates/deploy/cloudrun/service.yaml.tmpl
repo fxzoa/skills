@@ -1,0 +1,50 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{SERVICE_NAME}}
+  labels:
+    cloud.googleapis.com/location: {{REGION}}
+spec:
+  template:
+    metadata:
+      annotations:
+        # 常駐型プロセスのためCPU常時割り当て（スロットリング無効化）
+        run.googleapis.com/cpu-throttling: "false"
+        # スケール制限（二重発注・二重処理防止）
+        autoscaling.knative.dev/minScale: "{{MIN_INSTANCES}}"
+        autoscaling.knative.dev/maxScale: "{{MAX_INSTANCES}}"
+        # 実行環境: 第2世代
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 3600
+      containers:
+      - name: {{SERVICE_NAME}}-app
+        image: {{REGION}}-docker.pkg.dev/{{PROJECT_ID}}/{{REPO_NAME}}/{{SERVICE_NAME}}:latest
+        resources:
+          limits:
+            cpu: "{{CPU_LIMIT}}"
+            memory: "{{MEMORY_LIMIT}}"
+        ports:
+        - name: http1
+          containerPort: {{PORT}}
+        env:
+        - name: PORT
+          value: "{{PORT}}"
+        - name: HOST
+          value: "0.0.0.0"
+        startupProbe:
+          httpGet:
+            path: {{HEALTH_PATH}}
+            port: {{PORT}}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 12
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: {{HEALTH_PATH}}
+            port: {{PORT}}
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3

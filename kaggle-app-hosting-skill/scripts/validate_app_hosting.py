@@ -3,18 +3,20 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
 import json
-import sys
 from pathlib import Path
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print("Usage: validate_app_hosting.py <kaggle_dir>", file=sys.stderr)
-        return 1
+    parser = argparse.ArgumentParser(
+        description="Validate Kaggle CPU App Hosting bundle: CPU-only metadata, suffixes, JSON, and %%writefile AST."
+    )
+    parser.add_argument("kaggle_dir", help="Path to the Kaggle app hosting bundle directory")
+    args = parser.parse_args()
 
-    base = Path(sys.argv[1]).resolve()
+    base = Path(args.kaggle_dir).resolve()
     km = json.loads((base / "kernel-metadata.json").read_text(encoding="utf-8"))
 
     assert km.get("enable_gpu") is False and km.get("enable_tpu") is False, "App hosting must be CPU-only"

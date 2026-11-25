@@ -3,19 +3,22 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
 import json
-import sys
 from pathlib import Path
 
 
 def main() -> int:
-    if len(sys.argv) < 3:
-        print("Usage: validate_colab_bundle.py <project_dir> <notebook.ipynb>", file=sys.stderr)
-        return 1
+    parser = argparse.ArgumentParser(
+        description="Validate Colab Studio notebook bundle: Rule.13, JSON syntax, %%writefile AST, tail -f final cell, and companion files."
+    )
+    parser.add_argument("project_dir", help="Path to the Colab project directory")
+    parser.add_argument("notebook", help="Notebook filename (relative to project_dir)")
+    args = parser.parse_args()
 
-    base = Path(sys.argv[1]).resolve()
-    nb_path = base / sys.argv[2]
+    base = Path(args.project_dir).resolve()
+    nb_path = base / args.notebook
     nb = json.loads(nb_path.read_text(encoding="utf-8"))
     assert nb.get("nbformat") == 4, "Notebook must be nbformat 4"
 

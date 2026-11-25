@@ -1,0 +1,43 @@
+steps:
+  # 1. Docker イメージのビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:latest'
+      - '-f'
+      - '{{DOCKERFILE_PATH}}'
+      - '.'
+
+  # 2. Artifact Registry へプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:latest'
+
+  # 3. Cloud Run サービスへデプロイ
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME'
+      - '--image=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:latest'
+      - '--region=$_REGION'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port={{PORT}}'
+      - '--cpu={{CPU_LIMIT}}'
+      - '--memory={{MEMORY_LIMIT}}'
+      - '--no-cpu-throttling'
+      - '--min-instances={{MIN_INSTANCES}}'
+      - '--max-instances={{MAX_INSTANCES}}'
+      - '--execution-environment=gen2'
+
+substitutions:
+  _REGION: '{{REGION}}'
+  _REPO_NAME: '{{REPO_NAME}}'
+  _SERVICE_NAME: '{{SERVICE_NAME}}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

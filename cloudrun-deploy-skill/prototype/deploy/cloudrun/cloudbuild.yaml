@@ -1,0 +1,43 @@
+steps:
+  # 1. Docker イメージのビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:latest'
+      - '-f'
+      - 'docker/Dockerfile.cloudrun'
+      - '.'
+
+  # 2. Artifact Registry へプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:latest'
+
+  # 3. Cloud Run サービスへデプロイ
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME'
+      - '--image=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:latest'
+      - '--region=$_REGION'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--cpu=2'
+      - '--memory=2Gi'
+      - '--no-cpu-throttling'
+      - '--min-instances=1'
+      - '--max-instances=1'
+      - '--execution-environment=gen2'
+
+substitutions:
+  _REGION: 'asia-northeast1'
+  _REPO_NAME: 'coin-trade-repo'
+  _SERVICE_NAME: 'coin-trade-all-in-one'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,6 +1,6 @@
 ---
 name: kaggle-app-hosting
-description: Deploy CPU-only (No-Docker) persistent web apps and workers on Kaggle Cloud with Private Dataset .env/SQLite sync and Cloudflare Tunnel exposure.
+description: Deploy CPU-only (No-Docker) persistent web apps and workers on Kaggle Cloud with Private Dataset .env/SQLite sync, Cloudflare Tunnel exposure, and companion README.html / http.rest. Use when hosting CPU-only (`enable_gpu: false`) persistent apps on Kaggle. Do NOT use for GPU LLM inference servers on Kaggle (use kaggle-notebook) or Google Colab notebooks (use colab-notebook / colab-operator).
 ---
 
 # Skill: Kaggle Cloud CPU App Hosting & Persistent Sync Standards
@@ -42,6 +42,12 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 ## Trigger & Exit Criteria
 - **Trigger**: Deploying CPU-only persistent web apps/workers on Kaggle Cloud with Private Dataset sync.
 - **Exit Criteria**: `validate_app_hosting(<kaggle_dir>)` exits `0`, Tunnel responds HTTP 200, and `sync_dataset.py` backs up state cleanly.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable CPU app hosting architecture vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke tests.
+- [references/TOOLS.md](references/TOOLS.md) — Detailed CLI interfaces for `scripts/`.
+- [references/CHECKLIST.md](references/CHECKLIST.md) — Pre-deployment verification checklist.
 
 ## Anti-Patterns
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.

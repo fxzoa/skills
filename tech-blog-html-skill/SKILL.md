@@ -1,6 +1,6 @@
 ---
 name: tech-blog-html
-description: Create engaging technical blog posts and feature announcements as standalone HTML using the 9-block structure (Rule.11 / Rule.12 Archetype B).
+description: Creates engaging technical blog posts and feature announcements as standalone light-mode HTML using the 9-block structure with one curated inline SVG (Rule.11 / Rule.12 Archetype B). Use when writing developer-facing articles, release notes, or benchmark evaluations. Do not use for formal HLDs/proposals/incident reports (use prop-hld-ir-html), 11-chapter README.html specs (use html-readme-architect), or standalone diagrams (use architecture-diagram or diagram-design).
 ---
 
 # Tech Blog HTML Architect
@@ -41,3 +41,8 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.
 - Never embed Mermaid.js or external CDN scripts (Rule.11).
 - Never overload the post with multiple complex diagrams (limit to 1 curated SVG).
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable 9-block HTML/CSS core design vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke test steps.
+- [references/TOOLS.md](references/TOOLS.md) — Deterministic script interfaces (`scaffold_html.py`, `validate_html.py`).

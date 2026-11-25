@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>coin-trade-kaggle: Cloud Run 統合デプロイ仕様書</title>
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: #e2e8f0;
+      --accent-blue: #0284c7;
+      --accent-green: #10b981;
+      --accent-amber: #d97706;
+      --code-bg: #0f172a;
+      --code-text: #f1f5f9;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: var(--bg-surface);
+      padding: 2.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+    }
+    header {
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 { font-size: 1.85rem; color: var(--text-main); margin-bottom: 0.5rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      margin-right: 0.5rem;
+    }
+    h2 {
+      font-size: 1.35rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+    h3 { font-size: 1.1rem; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+    p, ul, ol { margin-bottom: 1rem; color: var(--text-muted); }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.4rem; }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: #f1f5f9;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      font-family: var(--font-mono);
+      padding: 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .diagram-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+    }
+    .callout {
+      background: #eff6ff;
+      border-left: 4px solid var(--accent-blue);
+      padding: 1rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1.25rem 0;
+    }
+    .callout-title { font-weight: 700; color: #1e40af; margin-bottom: 0.25rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+    }
+    th { background: #f8fafc; font-weight: 600; color: var(--text-main); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <span class="badge">GCP Cloud Run</span>
+      <span class="badge">Architecture Spec</span>
+      <span class="badge">Plan B (All-in-One)</span>
+    </div>
+    <h1>coin-trade-kaggle: Cloud Run 統合デプロイ仕様書</h1>
+    <p>単一コンテナ内で統合ダッシュボード・WebUI群・常駐取引ボットを安全に稼働させる構成と実行手順</p>
+  </header>
+
+  <section>
+    <h2>1. アーキテクチャ全体像</h2>
+    <p>Cloud Run の <strong>CPU常時割り当て（<code>--no-cpu-throttling</code>）</strong> を活用し、8080番ポートのダッシュボードをゲートウェイとして公開。内部バックグラウンドプロセスとして各種ボット・ワーカーおよび各機能WebUIを統括起動します。</p>
+
+    <!-- 1. ハイレベル (Logical/Functional) アーキテクチャ図 -->
+    <h3>ハイレベル (Logical / Functional) データフロー図</h3>
+    <div class="diagram-card">
+      <svg viewBox="0 0 900 320" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="900" height="320" fill="#fafafa" rx="8"/>
+        <!-- User -->
+        <rect x="30" y="110" width="110" height="70" rx="6" fill="#0284c7" />
+        <text x="85" y="145" fill="#ffffff" font-size="13" font-family="sans-serif" font-weight="bold" text-anchor="middle">User / Browser</text>
+        <text x="85" y="165" fill="#e0f2fe" font-size="10" font-family="sans-serif" text-anchor="middle">HTTPS (Port 443)</text>
+
+        <!-- Cloud Run Gateway -->
+        <rect x="220" y="60" width="200" height="170" rx="6" fill="#f8fafc" stroke="#0284c7" stroke-width="2"/>
+        <text x="320" y="85" fill="#0369a1" font-size="13" font-family="sans-serif" font-weight="bold" text-anchor="middle">Cloud Run Container</text>
+        <rect x="240" y="105" width="160" height="105" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+        <text x="320" y="130" fill="#1e3a8a" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">Unified Gateway</text>
+        <text x="320" y="150" fill="#475569" font-size="11" font-family="monospace" text-anchor="middle">dashboard_webui</text>
+        <text x="320" y="170" fill="#0284c7" font-size="11" font-family="sans-serif" text-anchor="middle">Port 8080 (Public)</text>
+        <text x="320" y="195" fill="#64748b" font-size="10" font-family="sans-serif" text-anchor="middle">Hono Reverse Proxy</text>
+
+        <!-- Internal Subsystems -->
+        <rect x="500" y="30" width="170" height="230" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="585" y="55" fill="#15803d" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">Internal WebUIs</text>
+        <text x="585" y="85" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">BTC Grid (:8000)</text>
+        <text x="585" y="110" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">Top20 (:8003)</text>
+        <text x="585" y="135" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">Surge Dip (:8004)</text>
+        <text x="585" y="160" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">Syncer (:8005)</text>
+        <text x="585" y="185" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">Multi DCA (:8008)</text>
+        <text x="585" y="210" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">Coin Trade (:8013)</text>
+        <text x="585" y="235" fill="#334155" font-size="11" font-family="monospace" text-anchor="middle">Slack Alert (:8010)</text>
+
+        <!-- Background Bots & DB -->
+        <rect x="710" y="30" width="160" height="230" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+        <text x="790" y="55" fill="#b45309" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">Background Bots</text>
+        <text x="790" y="85" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">Top20 Worker</text>
+        <text x="790" y="110" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">Price Monitor</text>
+        <text x="790" y="135" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">BTC Grid Bot</text>
+        <text x="790" y="160" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">BTC DCA Bot</text>
+        <text x="790" y="185" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">Surge Dip Bot</text>
+        <text x="790" y="210" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">Multi DCA Bot</text>
+        <text x="790" y="235" fill="#334155" font-size="11" font-family="sans-serif" text-anchor="middle">Slack Alert Sender</text>
+
+        <!-- Arrows -->
+        <path d="M 140 145 L 220 145" stroke="#0284c7" stroke-width="2" marker-end="url(#arrow)"/>
+        <path d="M 400 135 L 500 135" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,4"/>
+        <path d="M 400 165 L 710 165" stroke="#d97706" stroke-width="2" stroke-dasharray="4,4"/>
+
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="#0284c7" />
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- 2. インフラレベル (Physical/Network) アーキテクチャ図 -->
+    <h3>インフラレベル (Physical / Network) 構成図</h3>
+    <div class="diagram-card">
+      <svg viewBox="0 0 900 340" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="900" height="340" fill="#fafafa" rx="8"/>
+        
+        <!-- Public Zone -->
+        <rect x="20" y="20" width="180" height="300" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="110" y="45" fill="#475569" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">Public Network</text>
+        <rect x="40" y="70" width="140" height="60" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+        <text x="110" y="95" fill="#0f172a" font-size="11" font-family="sans-serif" text-anchor="middle">Client (HTTPS/TLS 1.3)</text>
+        <text x="110" y="115" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">Port 443</text>
+
+        <!-- GCP Region Boundary -->
+        <rect x="230" y="20" width="410" height="300" rx="6" fill="#f8fafc" stroke="#3b82f6" stroke-width="2"/>
+        <text x="435" y="45" fill="#1d4ed8" font-size="13" font-family="sans-serif" font-weight="bold" text-anchor="middle">GCP Cloud Run (Managed Gen2 / asia-northeast1)</text>
+
+        <!-- Container Pod -->
+        <rect x="250" y="65" width="370" height="235" rx="6" fill="#ffffff" stroke="#60a5fa"/>
+        <text x="270" y="90" fill="#1e40af" font-size="11" font-family="sans-serif" font-weight="bold">Single Container Pod (cpu: 2, memory: 2Gi)</text>
+
+        <!-- Gateway Process -->
+        <rect x="270" y="105" width="150" height="65" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+        <text x="345" y="125" fill="#1e3a8a" font-size="11" font-family="sans-serif" font-weight="bold" text-anchor="middle">Main Gateway</text>
+        <text x="345" y="145" fill="#2563eb" font-size="10" font-family="monospace" text-anchor="middle">0.0.0.0:8080</text>
+        <text x="345" y="160" fill="#64748b" font-size="9" font-family="sans-serif" text-anchor="middle">TLS Terminated by Google</text>
+
+        <!-- SSH Tunnel / Daemons -->
+        <rect x="440" y="105" width="160" height="65" rx="4" fill="#fef3c7" stroke="#fcd34d"/>
+        <text x="520" y="125" fill="#92400e" font-size="11" font-family="sans-serif" font-weight="bold" text-anchor="middle">SSH Tunnel (Optional)</text>
+        <text x="520" y="145" fill="#b45309" font-size="10" font-family="monospace" text-anchor="middle">127.0.0.1:6379</text>
+        <text x="520" y="160" fill="#78350f" font-size="9" font-family="sans-serif" text-anchor="middle">Forward to Remote Redis</text>
+
+        <!-- Storage & Internal Socket -->
+        <rect x="270" y="185" width="330" height="95" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="435" y="205" fill="#334155" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">Ephemeral Disk / Local SQLite (/app/data/tracker.db)</text>
+        <text x="435" y="225" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">Internal WebUIs (127.0.0.1: 8000, 8003..8013)</text>
+        <text x="435" y="245" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">Bot Workers (Deno Sub-processes)</text>
+
+        <!-- External Infrastructure -->
+        <rect x="670" y="20" width="210" height="300" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="775" y="45" fill="#475569" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">External Services</text>
+
+        <rect x="690" y="70" width="170" height="55" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+        <text x="775" y="92" fill="#0f172a" font-size="11" font-family="sans-serif" text-anchor="middle">Hyperliquid DEX API</text>
+        <text x="775" y="110" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">https://api.hyperliquid.xyz</text>
+
+        <rect x="690" y="140" width="170" height="55" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+        <text x="775" y="162" fill="#0f172a" font-size="11" font-family="sans-serif" text-anchor="middle">Remote Redis / VPS</text>
+        <text x="775" y="180" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">SSH Port 22 (Encrypted)</text>
+
+        <rect x="690" y="210" width="170" height="55" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+        <text x="775" y="232" fill="#0f172a" font-size="11" font-family="sans-serif" text-anchor="middle">Slack Webhook</text>
+        <text x="775" y="250" fill="#64748b" font-size="10" font-family="monospace" text-anchor="middle">https://hooks.slack.com</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. 作成された定義ファイル一覧</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ファイルパス</th>
+          <th>用途・役割</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>docker/Dockerfile.cloudrun</code></td>
+          <td>Deno + OpenSSH を備えたCloud Run統合イメージ定義</td>
+        </tr>
+        <tr>
+          <td><code>deploy/cloudrun/entrypoint.sh</code></td>
+          <td>コンテナ起動時に全WebUI・ボット・SSHトンネルを統括起動するスクリプト</td>
+        </tr>
+        <tr>
+          <td><code>deploy/cloudrun/service.yaml</code></td>
+          <td>Cloud Run (Knative) サービス構成マニフェスト（CPU常時割当、minScale=1）</td>
+        </tr>
+        <tr>
+          <td><code>deploy/cloudrun/deploy.sh</code></td>
+          <td>Artifact Registry作成、ビルド、プッシュ、Cloud Runデプロイの自動化シェル</td>
+        </tr>
+        <tr>
+          <td><code>deploy/cloudrun/cloudbuild.yaml</code></td>
+          <td>Google Cloud Build用CI/CD定義</td>
+        </tr>
+        <tr>
+          <td><code>deploy/cloudrun/.env.cloudrun.example</code></td>
+          <td>Cloud Run設定および各機能有効化フラグ用テンプレート</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>3. デプロイ手順（クイックスタート）</h2>
+    
+    <div class="callout">
+      <div class="callout-title">前提条件</div>
+      <p>Google Cloud SDK (<code>gcloud</code>) がインストールされ、対象GCPプロジェクトの権限（Cloud Run管理者、Artifact Registry管理者）で認証済みであること。</p>
+    </div>
+
+    <h3>ステップ 1: 環境変数の設定</h3>
+    <pre><code>export GCP_PROJECT_ID="your-gcp-project-id"
+export GCP_REGION="asia-northeast1"
+export CLOUDRUN_SERVICE_NAME="coin-trade-all-in-one"</code></pre>
+
+    <h3>ステップ 2: デプロイスクリプトの実行</h3>
+    <pre><code>cd /mnt/d/coin-trade-kaggle
+./deploy/cloudrun/deploy.sh</code></pre>
+
+    <h3>ステップ 3: （オプション）Secret Manager を用いた秘密鍵の登録</h3>
+    <p>外部RedisへのSSHトンネルが必要な場合、秘密鍵を Secret Manager に登録して環境変数 <code>SSH_PRIVATE_KEY</code> またはマウントとして注入します：</p>
+    <pre><code>gcloud secrets create redis-ssh-key --data-file=conf/redis_tunnel/id_key
+gcloud run services update coin-trade-all-in-one \
+  --set-secrets="SSH_PRIVATE_KEY=redis-ssh-key:latest" \
+  --set-env-vars="ENABLE_REDIS_TUNNEL=true,SSH_TARGET=user@your-vps-ip"</code></pre>
+  </section>
+
+  <section>
+    <h2>4. 運用・検証ポイント</h2>
+    <ul>
+      <li><strong>ヘルスチェック:</strong> Cloud Run は <code>/api/health</code> (Port 8080) を定期監視します。</li>
+      <li><strong>CPU常時割り当て:</strong> ボットがスリープせずに取引シグナルを監視し続けるため、<code>--no-cpu-throttling</code> を必ず指定します。</li>
+      <li><strong>単一インスタンス制限:</strong> 取引ボットの二重発注を防ぐため、<code>--max-instances=1</code> を指定しています。</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

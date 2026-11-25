@@ -1,6 +1,6 @@
 ---
 name: colab-operator
-description: Operate Google Colab environments via the `colab` CLI: provision GPU/TPU sessions, execute notebooks/scripts, monitor logs via autonomous schedulers, and run a self-healing loop on errors.
+description: Operate Google Colab environments via the `colab` CLI to provision GPU/TPU sessions, execute notebooks or scripts, monitor logs with autonomous schedulers, and run a self-healing loop on errors. Use when provisioning, running, monitoring, or stopping remote Colab VMs via CLI. Do NOT use for authoring Colab notebook code/cells (use colab-notebook) or Kaggle kernel deployments (use kaggle-notebook / kaggle-app-hosting).
 ---
 
 # Skill: Colab Session Operator
@@ -39,6 +39,12 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 ## Trigger & Exit Criteria
 - **Trigger**: Provisioning, executing, or debugging a Colab GPU/TPU session via `colab` CLI.
 - **Exit Criteria**: Notebook executes cleanly, scheduler confirms `ready`, `http.rest` checks pass, and `stop_colab(<session>)` terminates the VM.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable Colab CLI operator patterns vs. session-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke tests.
+- [references/TOOLS.md](references/TOOLS.md) — Detailed CLI interfaces for `scripts/`.
+- [references/CHECKLIST.md](references/CHECKLIST.md) — Session verification and teardown checklist.
 
 ## Anti-Patterns
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.

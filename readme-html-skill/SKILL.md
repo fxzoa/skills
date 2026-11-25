@@ -1,6 +1,6 @@
 ---
 name: html-readme-architect
-description: Create standalone light-mode HTML technical specifications and README.html without Mermaid or external CDNs (Rule.11 / Rule.12 Archetype C).
+description: Creates standalone light-mode HTML technical specifications and 11-chapter README.html documents with inline SVGs and zero external CDNs or Mermaid (Rule.11 / Rule.12 Archetype C / Rule.14). Use when documenting a repository's architecture, APIs, .env config, prerequisites, and setup verification. Do not use for 9-block tech blogs (use tech-blog-html), formal proposals/HLDs/incident reports (use prop-hld-ir-html), or standalone diagrams (use architecture-diagram).
 ---
 
 # HTML README & Specification Architect
@@ -44,3 +44,8 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 ## Anti-Patterns
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.
 - Never use Mermaid.js, external CDNs, or omit `.env` variables from Chapter 07.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable 11-chapter HTML/SVG core design vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke test steps.
+- [references/TOOLS.md](references/TOOLS.md) — Deterministic script interfaces (`scaffold_html.py`, `validate_html.py`).

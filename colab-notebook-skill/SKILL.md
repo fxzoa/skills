@@ -1,6 +1,6 @@
 ---
 name: colab-notebook
-description: Build Google Colab Studio inference notebooks with external .env validation, single-responsibility %%writefile cells, uv venv isolation, router separation, companion README.html / http.rest, and mandatory tail -f streaming log final cell.
+description: Build and validate Google Colab Studio inference notebooks with external .env validation (Rule.13), single-responsibility %%writefile cells, uv venv isolation, router separation, companion README.html / http.rest, and a mandatory tail -f streaming log final cell. Use when creating, updating, or reviewing Colab inference .ipynb bundles. Do NOT use for remote Colab CLI session control (use colab-operator) or Kaggle deployments (use kaggle-notebook / kaggle-app-hosting).
 ---
 
 # Colab Studio Notebook Standards
@@ -41,6 +41,12 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 ## Trigger & Exit Criteria
 - **Trigger**: Creating, updating, or reviewing a Google Colab Studio inference notebook.
 - **Exit Criteria**: `validate_colab_bundle(<dir>, <notebook.ipynb>)` exits `0` and `references/CHECKLIST.md` passes.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable Colab Studio architecture vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke tests.
+- [references/TOOLS.md](references/TOOLS.md) — Detailed CLI interfaces for `scripts/`.
+- [references/CHECKLIST.md](references/CHECKLIST.md) — Pre-delivery verification checklist.
 
 ## Anti-Patterns
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.

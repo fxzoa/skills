@@ -3,18 +3,20 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
 import json
-import sys
 from pathlib import Path
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print("Usage: validate_kaggle_bundle.py <kaggle_dir>", file=sys.stderr)
-        return 1
+    parser = argparse.ArgumentParser(
+        description="Validate Kaggle notebook bundle: metadata suffixes, JSON syntax, %%writefile Python AST, and tail -f final cell."
+    )
+    parser.add_argument("kaggle_dir", help="Path to the Kaggle notebook bundle directory")
+    args = parser.parse_args()
 
-    base = Path(sys.argv[1]).resolve()
+    base = Path(args.kaggle_dir).resolve()
     km = json.loads((base / "kernel-metadata.json").read_text(encoding="utf-8"))
 
     assert km["id"].endswith("-notebook"), f"kernel id must end with -notebook: {km['id']}"

@@ -1,6 +1,6 @@
 ---
 name: kaggle-operator
-description: Operate Kaggle Cloud environments via the `kaggle` CLI: verify/publish dependencies, push notebooks, monitor execution via autonomous schedulers, and run a self-healing loop on errors.
+description: Operates Kaggle Cloud environments via the kaggle CLI: verifies/publishes dataset and model dependencies, pushes batch notebooks, monitors execution with autonomous schedulers, and runs a self-healing loop on errors. Use when deploying, running, or debugging Kaggle notebooks, datasets, or models. Do NOT use for local Jupyter/Colab notebooks without Kaggle CLI or general cloud VM Docker deployments.
 ---
 
 # Skill: Kaggle Cloud Session & Deployment Operator
@@ -21,6 +21,18 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 | `deploy_kaggle` | `python3 scripts/deploy_kaggle.py <kaggle_dir> [--model-work-dir <dir>]` | Verifies `dataset_sources` / `model_sources` on Kaggle Cloud, runs `publish_kaggle_dataset.sh create` / `publish_kaggle_model.sh` if missing, then runs `kaggle kernels push`. |
 | `check_kaggle_run` | `bash scripts/check_kaggle_run.sh <kaggle_dir> [output_dir]` | Checks `kaggle kernels status` and downloads logs via `kaggle kernels output` on `ERROR` or `COMPLETE`. |
 | `schedule_kaggle_monitor` | `python3 scripts/schedule_kaggle_monitor.py -k <kaggle_dir> [-o <out_dir>] [-i 30] [-u <health_url>]` | Periodic batch status scheduler that polls execution, downloads output logs, diagnoses errors (OOM 137, missing modules, 404), and triggers the self-healing loop. |
+
+## Document Index
+| Document | Purpose |
+|:---|:---|
+| [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) | Reusable core design vs. project-specific replacements |
+| [references/TOOLS.md](references/TOOLS.md) | CLI flags, schemas, and exit codes for `scripts/` |
+| [references/ARCHITECTURE.md](references/ARCHITECTURE.md) | Kaggle batch pipeline & self-healing loop architecture |
+| [references/CHECKLIST.md](references/CHECKLIST.md) | Pre-push & post-run acceptance checklist |
+| [references/GUIDE.md](references/GUIDE.md) | Step-by-step Kaggle deployment & monitoring guide |
+| [references/PREREQUISITES.md](references/PREREQUISITES.md) | Kaggle CLI, credentials, and local environment setup |
+| [references/TRIGGERS.md](references/TRIGGERS.md) | Positive/negative trigger examples and smoke tests |
+| [references/TROUBLESHOOTING.md](references/TROUBLESHOOTING.md) | Fixes for OOM 137, 409 Conflict, and 404 errors |
 
 ## Execution Constraints
 - **Batch Mode (`papermill`)**: `kaggle kernels push` runs asynchronously (no persistent REPL); notebooks must use log snapshots instead of `while True:` to reach `KernelWorkerStatus.COMPLETE`.

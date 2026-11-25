@@ -1,6 +1,6 @@
 ---
 name: kaggle-notebook
-description: Deploy and verify large LLM inference servers (FastAPI + Cloudflare Tunnel) on Kaggle GPU (T4 x2 / 32GB VRAM) via `kaggle kernels push`.
+description: Build, deploy, and validate large LLM inference server bundles (FastAPI + Cloudflare Tunnel + mandatory tail -f final cell) on Kaggle GPU (T4 x2 / 32GB VRAM) via `kaggle kernels push`. Use when creating or reviewing Kaggle GPU LLM inference notebooks. Do NOT use for CPU-only Kaggle web apps (use kaggle-app-hosting) or Google Colab notebooks (use colab-notebook / colab-operator).
 ---
 
 # Kaggle LLM Studio Standards
@@ -41,6 +41,12 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 ## Trigger & Exit Criteria
 - **Trigger**: Creating, updating, or reviewing a Kaggle GPU LLM inference notebook bundle.
 - **Exit Criteria**: `validate_kaggle_bundle(<kaggle_dir>)` exits `0` and `references/CHECKLIST.md` passes.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable Kaggle GPU LLM architecture vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke tests.
+- [references/TOOLS.md](references/TOOLS.md) — Detailed CLI interfaces for `scripts/`.
+- [references/CHECKLIST.md](references/CHECKLIST.md) — Pre-delivery verification checklist.
 
 ## Anti-Patterns
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.

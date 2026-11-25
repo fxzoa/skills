@@ -1,6 +1,6 @@
 ---
 name: prop-hld-ir-html
-description: Create formal Proposals, High-Level Designs (HLD), and Incident Reports as clean, print-ready standalone HTML documents.
+description: Creates formal Proposals, High-Level Designs (HLD), and Incident Reports as clean, print-ready standalone HTML documents using a paper-and-ink aesthetic (Rule.11 / Rule.12 Archetype A). Use when producing decision-oriented IT documents with executive summaries, risk highlights, and monochrome-plus-vermilion inline SVGs. Do not use for tech blog posts (use tech-blog-html), 11-chapter README.html specs (use html-readme-architect), or standalone flowcharts (use diagram-design).
 ---
 
 # Proposal, HLD & Incident Report HTML Architect
@@ -35,3 +35,8 @@ Detailed tool interfaces are specified in [references/TOOLS.md](references/TOOLS
 - **Never rely on probabilistic prompt-driven orchestration**: Materialize procedural steps into deterministic `scripts/*.py`.
 - Never use emojis, CSS gradients, Mermaid.js, or external CDN scripts (Rule.11 / Rule.12).
 - Never bury conclusions at the bottom; place decisions and action items upfront.
+
+## Document Index
+- [prototype/PROTOTYPE.md](prototype/PROTOTYPE.md) — Reusable paper-and-ink HTML/print CSS core design vs. project-specific replacements.
+- [references/TRIGGERS.md](references/TRIGGERS.md) — Positive/negative trigger examples and smoke test steps.
+- [references/TOOLS.md](references/TOOLS.md) — Deterministic script interfaces (`scaffold_html.py`, `validate_html.py`).
