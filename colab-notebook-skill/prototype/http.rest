@@ -1,0 +1,30 @@
+@localUrl = http://{{$dotenv TUNNEL_HOST}}:{{$dotenv TUNNEL_PORT}}
+@tunnelUrl = https://{{$dotenv TUNNEL_HOSTNAME}}
+@apiKey = {{$dotenv LLM_API_KEY}}
+@modelName = {{$dotenv MODEL_NAME}}
+
+### Health Check (Local)
+GET {{localUrl}}/healthz
+
+### Health Check (Tunnel)
+GET {{tunnelUrl}}/healthz
+
+### Server Status (Tunnel)
+GET {{tunnelUrl}}/api/v1/status
+Authorization: Bearer {{apiKey}}
+
+### List Models (Tunnel)
+GET {{tunnelUrl}}/v1/models
+Authorization: Bearer {{apiKey}}
+
+### Chat Completions (Tunnel)
+POST {{tunnelUrl}}/v1/chat/completions
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+
+{
+  "model": "{{modelName}}",
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "max_tokens": 128,
+  "stream": false
+}

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>multi-agent-team-skill Technical Specification</title>
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --color-primary: #0284c7;
+      --color-primary-light: #e0f2fe;
+      --color-accent: #0f766e;
+      --color-accent-light: #ccfbf1;
+      --color-warning-bg: #fffbeb;
+      --color-warning-border: #fef3c7;
+      --color-warning-text: #92400e;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 2.5rem 1rem;
+    }
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      padding: 3rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-main);
+      margin-bottom: 0.75rem;
+    }
+    .lead {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    h2 {
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    p {
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    th {
+      background: #f1f5f9;
+      color: var(--text-main);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-strong);
+    }
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .role-badge {
+      display: inline-block;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .role-coord { background: #e0f2fe; color: #0369a1; }
+    .role-advisor { background: #fef3c7; color: #b45309; }
+    .role-reviewer { background: #fee2e2; color: #b91c1c; }
+    .role-worker { background: #f3e8ff; color: #7e22ce; }
+    .model-tag {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: #f1f5f9;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      color: var(--text-main);
+    }
+    .diagram-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+    .diagram-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+      font-weight: 500;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      line-height: 1.5;
+    }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background: #f1f5f9;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .card {
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--bg-surface);
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="badge">Architecture & Team Protocol</span>
+    <h1>multi-agent-team-skill</h1>
+    <p class="lead">
+      Antigravity環境において、Claude Codeライクなマルチモデル役割分担（Coordinator, Advisor, Reviewer, Worker）を実現し、他端末へワンコマンドで配布・適用する標準スキルパッケージ。
+    </p>
+
+    <!-- SECTION 1: ARCHITECTURE OVERVIEW (SVG) -->
+    <h2>1. チーム編成アーキテクチャ & データフロー</h2>
+    <p>各ロールがタスクの性質に応じてモデル特性（Flashの速度・Proの深層推論・Flash-Liteの並列処理力）を最大限に引き出します。</p>
+    
+    <div class="diagram-card">
+      <svg viewBox="0 0 900 380" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="max-height: 400px;">
+        <defs>
+          <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08" />
+          </filter>
+        </defs>
+
+        <!-- Background grid/canvas -->
+        <rect x="0" y="0" width="900" height="380" fill="#f8fafc" rx="8"/>
+
+        <!-- User Node -->
+        <g transform="translate(40, 150)" filter="url(#shadow)">
+          <rect width="130" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+          <text x="65" y="38" text-anchor="middle" font-weight="700" font-size="14" fill="#0f172a">USER</text>
+          <text x="65" y="58" text-anchor="middle" font-size="11" fill="#64748b">Request & Goal</text>
+        </g>
+
+        <!-- Coordinator (Main) -->
+        <g transform="translate(240, 120)" filter="url(#shadow)">
+          <rect width="210" height="140" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <rect x="12" y="12" width="70" height="20" rx="4" fill="#0284c7"/>
+          <text x="47" y="26" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">COORDINATOR</text>
+          <text x="105" y="55" text-anchor="middle" font-weight="700" font-size="15" fill="#0f172a">Gemini 3.8 Flash</text>
+          <text x="105" y="78" text-anchor="middle" font-size="12" fill="#0369a1">Sonnet Analogy</text>
+          <text x="105" y="105" text-anchor="middle" font-size="11" fill="#334155">• Task Orchestration</text>
+          <text x="105" y="122" text-anchor="middle" font-size="11" fill="#334155">• Core Implementation</text>
+        </g>
+
+        <!-- Arrow: User -> Coordinator -->
+        <path d="M 170 190 L 240 190" stroke="#0284c7" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        
+        <!-- Advisor Node -->
+        <g transform="translate(540, 20)" filter="url(#shadow)">
+          <rect width="320" height="90" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="20" y="28" font-weight="700" font-size="13" fill="#b45309">ADVISOR (Architect)</text>
+          <text x="290" y="28" text-anchor="end" font-family="monospace" font-size="11" font-weight="700" fill="#92400e">Gemini 4 Carbon (pro)</text>
+          <text x="20" y="52" font-size="11" fill="#475569">・High-level architecture & system design</text>
+          <text x="20" y="72" font-size="11" fill="#475569">・Tradeoff analysis & brainstorm proposals</text>
+        </g>
+
+        <!-- Reviewer Node -->
+        <g transform="translate(540, 145)" filter="url(#shadow)">
+          <rect width="320" height="90" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="20" y="28" font-weight="700" font-size="13" fill="#b91c1c">REVIEWER (Auditor)</text>
+          <text x="290" y="28" text-anchor="end" font-family="monospace" font-size="11" font-weight="700" fill="#991b1b">Gemini 4 Carbon (pro)</text>
+          <text x="20" y="52" font-size="11" fill="#475569">・Strict code audit & security checking</text>
+          <text x="20" y="72" font-size="11" fill="#475569">・Refactoring verification & Rule.06 PDCA</text>
+        </g>
+
+        <!-- Worker Node -->
+        <g transform="translate(540, 270)" filter="url(#shadow)">
+          <rect width="320" height="90" rx="8" fill="#fdf4ff" stroke="#a855f7" stroke-width="1.5"/>
+          <text x="20" y="28" font-weight="700" font-size="13" fill="#7e22ce">WORKERS / SUBAGENTS</text>
+          <text x="290" y="28" text-anchor="end" font-family="monospace" font-size="11" font-weight="700" fill="#6b21a8">Gemini 4 Hydrogen (flash_lite)</text>
+          <text x="20" y="52" font-size="11" fill="#475569">・Parallel codebase search & batch processing</text>
+          <text x="20" y="72" font-size="11" fill="#475569">・Lightweight syntax/test runs (n=1..5)</text>
+        </g>
+
+        <!-- Connecting Lines from Coordinator to Roles -->
+        <path d="M 450 150 C 490 150, 490 65, 540 65" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="4"/>
+        <path d="M 450 190 L 540 190" stroke="#ef4444" stroke-width="2" fill="none" stroke-dasharray="4"/>
+        <path d="M 450 230 C 490 230, 490 315, 540 315" stroke="#a855f7" stroke-width="2" fill="none" stroke-dasharray="4"/>
+      </svg>
+      <div class="diagram-caption">図 1.1: マルチモデル委譲アーキテクチャ（メインが統括し、必要に応じてPro/Flash-Liteを自律召喚）</div>
+    </div>
+
+    <!-- SECTION 2: ROLE SPECIFICATION TABLE -->
+    <h2>2. モデル役割定義とマッピング仕様</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>役割 / ペルソナ</th>
+            <th>指定モデル</th>
+            <th>Claude Code 対応</th>
+            <th>主な責務とトリガー</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-badge role-coord">Coordinator</span></td>
+            <td><span class="model-tag">Gemini 3.8 Flash (inherit)</span></td>
+            <td>Claude 3.5/3.7 Sonnet</td>
+            <td>対話進行、タスク分解、メイン実装。ユーザーとの窓口。</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-advisor">Advisor</span></td>
+            <td><span class="model-tag">Gemini 4 Carbon (pro)</span></td>
+            <td>Claude 3.7 / Fable / Opus</td>
+            <td>アーキテクチャ設計、方式比較、複雑な要件の壁打ち・意思決定。</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-reviewer">Reviewer</span></td>
+            <td><span class="model-tag">Gemini 4 Carbon (pro)</span></td>
+            <td>Claude 3.7 Opus</td>
+            <td>コード変更後の厳格なセキュリティ・品質監査、リファクタリング検証。</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge role-worker">Worker</span></td>
+            <td><span class="model-tag">Gemini 4 Hydrogen (flash_lite)</span></td>
+            <td>Claude 3.5 Haiku</td>
+            <td>大量ファイルの並列検索、データ変換、軽量な静的チェック・テスト。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 3: INSTALLATION & CROSS-MACHINE USAGE -->
+    <h2>3. 他端末への導入手順（GitHub配布）</h2>
+    <p>別PCや新規環境でも、以下のコマンドを実行するだけでマシン全体のAntigravity環境へ自動セットアップが完了します。</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>方式 A: Git Clone + 自動セットアップ（推奨）</h3>
+        <p>新規端末のシェルで以下を実行します：</p>
+        <pre><code>git clone &lt;your-repo-url&gt;
+cd multi-agent-team-skill
+bash scripts/setup.sh</code></pre>
+        <p style="font-size: 0.85rem;"><code>~/.gemini/config/rules/</code> および <code>~/.gemini/AGENTS.md</code> へ自動配備されます。</p>
+      </div>
+
+      <div class="card">
+        <h3>方式 B: npx skills パッケージマネージャ</h3>
+        <p>スキルマネージャを利用して導入する場合：</p>
+        <pre><code>npx skills add &lt;user&gt;/multi-agent-team-skill</code></pre>
+        <p style="font-size: 0.85rem;">Antigravity のスキルディレクトリへ直接リンクされます。</p>
+      </div>
+    </div>
+
+    <!-- SECTION 4: DIRECTORY STRUCTURE -->
+    <h2>4. パッケージ構成</h2>
+    <pre><code>multi-agent-team-skill/
+├── README.md               # GitHub向けMarkdown
+├── html/
+│   └── README.html         # 完全自己完結型 技術仕様書（本ファイル）
+├── SKILL.md                # スキル仕様書（Antigravity標準）
+├── skill.json              # スキルパッケージ・マニフェスト
+├── scripts/
+│   └── setup.sh            # ユーザーレベル配備スクリプト (chmod +x)
+├── templates/
+│   └── team_model_delegation.md  # トークン最小化・英語ルール原本
+└── skills/
+    └── multi-agent-team/
+        └── SKILL.md        # ネストエントリポイント</code></pre>
+
+    <footer>
+      <span>multi-agent-team-skill v1.0.0</span>
+      <span>Antigravity Customization Architecture</span>
+    </footer>
+  </div>
+</body>
+</html>

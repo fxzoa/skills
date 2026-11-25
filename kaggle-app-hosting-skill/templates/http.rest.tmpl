@@ -1,0 +1,8 @@
+@localUrl = http://{{$dotenv TUNNEL_HOST}}:{{$dotenv TUNNEL_PORT}}
+@tunnelUrl = https://{{$dotenv TUNNEL_HOSTNAME}}
+
+### Health Check (Local)
+GET {{localUrl}}/health
+
+### Health Check (Tunnel)
+GET {{tunnelUrl}}/health

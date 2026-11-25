@@ -1,0 +1,10 @@
+{
+  "ownerSlug": "example-user",
+  "title": "sample-llm-model",
+  "slug": "sample-llm-model",
+  "subtitle": "Public Kaggle mirror of org/sample-llm",
+  "isPrivate": false,
+  "description": "# Model Summary\n\nPublic mirror of `org/sample-llm` (`model.gguf`).\n",
+  "publishTime": "",
+  "provenanceSources": "https://huggingface.co/org/sample-llm"
+}

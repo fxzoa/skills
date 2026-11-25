@@ -1,0 +1,14 @@
+{
+  "ownerSlug": "example-user",
+  "modelSlug": "sample-llm-model",
+  "instanceSlug": "default",
+  "framework": "other",
+  "overview": "Weights for model.gguf",
+  "usage": "Mount `example-user/sample-llm-model/other/default/1` in Kaggle notebook.",
+  "licenseName": "Apache 2.0",
+  "fineTunable": false,
+  "trainingData": [],
+  "modelInstanceType": "Unspecified",
+  "baseModelInstanceId": 0,
+  "externalBaseModelUrl": "https://huggingface.co/org/sample-llm"
+}
