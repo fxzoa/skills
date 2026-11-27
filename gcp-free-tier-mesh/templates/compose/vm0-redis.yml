@@ -1,0 +1,35 @@
+# ==============================================================================
+# VM #0 (btczoa-project / vm-btczoa-redis): Redis Server Hub
+# Internal IP: 10.0.0.2 | Container Count: 1
+# ==============================================================================
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis-server
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --protected-mode
+      - "no"
+      - --maxmemory
+      - "512mb"
+      - --maxmemory-policy
+      - "allkeys-lru"
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - hl-redis-network
+
+networks:
+  hl-redis-network:
+    name: hl-redis-network
+    driver: bridge

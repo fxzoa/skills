@@ -112,14 +112,27 @@ def main() -> int:
         "--name", "crawl4ai",
         "--restart", "unless-stopped",
         "-p", f"{args.port}:11235",
-        "--shm-size=1g",
+        "-v", "/dev/shm:/dev/shm",
         "-e", f"CRAWL4AI_API_TOKEN={token}",
         "unclecode/crawl4ai:latest"
     ]
+    # For standard Docker support, fallback to --shm-size=1g if volume mount is not preferred or try standard
     res = subprocess.run(run_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if res.returncode != 0:
-        print(f"ERROR: Failed to run container: {res.stderr}", file=sys.stderr)
-        return res.returncode
+        # Retry with --shm-size=1g in case engine requires flag
+        run_cmd_fallback = [
+            docker, "run", "-d",
+            "--name", "crawl4ai",
+            "--restart", "unless-stopped",
+            "-p", f"{args.port}:11235",
+            "--shm-size=1g",
+            "-e", f"CRAWL4AI_API_TOKEN={token}",
+            "unclecode/crawl4ai:latest"
+        ]
+        res_fb = subprocess.run(run_cmd_fallback, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if res_fb.returncode != 0:
+            print(f"ERROR: Failed to run container: {res.stderr}\nFallback error: {res_fb.stderr}", file=sys.stderr)
+            return res.returncode
 
     # 5. Wait for health
     if not wait_for_health(f"http://127.0.0.1:{args.port}", timeout=60):

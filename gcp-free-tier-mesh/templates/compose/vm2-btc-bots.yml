@@ -1,0 +1,75 @@
+# ==============================================================================
+# VM #2 (nanbingjun-project / vm-nanbingjun): BTC Trading Bots
+# Internal IP: 10.20.0.x | Container Count: 3
+# ==============================================================================
+services:
+  redis-tunnel:
+    image: alpine:3.20
+    container_name: redis-tunnel
+    restart: unless-stopped
+    volumes:
+      - ${REDIS_SSH_KEY_PATH:-~/.ssh/google_compute_engine}:/ssh-key/id_key:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        apk add --no-cache openssh-client >/dev/null 2>&1 && \
+        cp /ssh-key/id_key /tmp/id_key && \
+        chmod 600 /tmp/id_key && \
+        exec ssh -N \
+          -i /tmp/id_key \
+          -p "${REDIS_SSH_PORT:-22}" \
+          -o StrictHostKeyChecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=3 \
+          -o ExitOnForwardFailure=yes \
+          -L "0.0.0.0:6379:127.0.0.1:6379" \
+          "${REDIS_SSH_USER:-ppbb}@${REDIS_SSH_HOST:-10.0.0.3}"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 6379"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    networks:
+      - hl-trade-network
+
+  btc-dca-bot:
+    image: coin-trade-kaggle-btc-dca-bot:latest
+    container_name: btc-dca-bot
+    restart: unless-stopped
+    volumes:
+      - ./data/btc_dca_bot:/app/data
+    env_file:
+      - ./env/btc_dca_bot.env
+    environment:
+      - REDIS_URL=redis://redis-tunnel:6379
+      - DENO_V8_FLAGS=--max-old-space-size=96
+    depends_on:
+      redis-tunnel:
+        condition: service_healthy
+    networks:
+      - hl-trade-network
+
+  btc-grid-bot:
+    image: coin-trade-kaggle-btc-grid-bot:latest
+    container_name: btc-grid-bot
+    restart: unless-stopped
+    volumes:
+      - ./data/btc_grid_bot:/app/data
+    env_file:
+      - ./env/btc_grid_bot.env
+    environment:
+      - REDIS_URL=redis://redis-tunnel:6379
+      - DENO_V8_FLAGS=--max-old-space-size=96
+    depends_on:
+      redis-tunnel:
+        condition: service_healthy
+    networks:
+      - hl-trade-network
+
+networks:
+  hl-trade-network:
+    name: hl-trade-network
+    driver: bridge

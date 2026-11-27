@@ -1,0 +1,75 @@
+# ==============================================================================
+# VM #1 (fxzoa2020-project / vm-fxzoa2020): Monitor & Slack Alert
+# Internal IP: 10.10.0.x | Container Count: 3
+# ==============================================================================
+services:
+  redis-tunnel:
+    image: alpine:3.20
+    container_name: redis-tunnel
+    restart: unless-stopped
+    volumes:
+      - ${REDIS_SSH_KEY_PATH:-~/.ssh/google_compute_engine}:/ssh-key/id_key:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        apk add --no-cache openssh-client >/dev/null 2>&1 && \
+        cp /ssh-key/id_key /tmp/id_key && \
+        chmod 600 /tmp/id_key && \
+        exec ssh -N \
+          -i /tmp/id_key \
+          -p "${REDIS_SSH_PORT:-22}" \
+          -o StrictHostKeyChecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=3 \
+          -o ExitOnForwardFailure=yes \
+          -L "0.0.0.0:6379:127.0.0.1:6379" \
+          "${REDIS_SSH_USER:-ppbb}@${REDIS_SSH_HOST:-10.0.0.3}"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 6379"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    networks:
+      - hl-trade-network
+
+  price-monitor:
+    image: nanbingjun/price-change-monitor:latest
+    container_name: price-change-monitor
+    restart: unless-stopped
+    volumes:
+      - ./data/price_monitor:/app/data
+    env_file:
+      - ./env/price_monitor.env
+    environment:
+      - REDIS_URL=redis://redis-tunnel:6379
+      - DENO_V8_FLAGS=--max-old-space-size=96
+    depends_on:
+      redis-tunnel:
+        condition: service_healthy
+    networks:
+      - hl-trade-network
+
+  slack-alert-sender:
+    image: coin-trade-kaggle-slack-alert-sender:latest
+    container_name: slack-alert-sender
+    restart: unless-stopped
+    volumes:
+      - ./data/slack_alert_sender:/app/data
+    env_file:
+      - ./env/slack_alert_sender.env
+    environment:
+      - REDIS_URL=redis://redis-tunnel:6379
+      - DENO_V8_FLAGS=--max-old-space-size=96
+    depends_on:
+      redis-tunnel:
+        condition: service_healthy
+    networks:
+      - hl-trade-network
+
+networks:
+  hl-trade-network:
+    name: hl-trade-network
+    driver: bridge
